@@ -29,7 +29,7 @@ const en = {
   "nav.work": "Work",
   "nav.projects": "Projects",
 
-  "home.greeting": "Hi, I'm Ben",
+  "home.greeting": "Hi, I'm Ben Mim Ahmed",
   "home.title":
     "Engineering Student in ICT | Focused on Offensive Cybersecurity & Penetration Testing",
   "home.summary":
