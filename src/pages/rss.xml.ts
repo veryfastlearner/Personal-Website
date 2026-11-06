@@ -1,6 +1,7 @@
 import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
-import { HOME } from "@consts";
+import { SITE } from "@consts";
+import { t } from "@i18n";
 
 type Context = {
   site: string
@@ -8,7 +9,7 @@ type Context = {
 
 export async function GET(context: Context) {
   const blog = (await getCollection("blog"))
-  .filter(post => !post.data.draft);
+    .filter(post => !post.data.draft);
 
   const projects = (await getCollection("projects"))
     .filter(project => !project.data.draft);
@@ -17,8 +18,8 @@ export async function GET(context: Context) {
     .sort((a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf());
 
   return rss({
-    title: HOME.TITLE,
-    description: HOME.DESCRIPTION,
+    title: `${t("en", "meta.blog.title")} | ${SITE.NAME}`,
+    description: t("en", "meta.home.description"),
     site: context.site,
     items: items.map((item) => ({
       title: item.data.title,

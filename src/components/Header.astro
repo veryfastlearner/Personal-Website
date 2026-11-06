@@ -1,34 +1,251 @@
 ---
-import Container from "@components/Container.astro";
-import Link from "@components/Link.astro";
-import { SITE } from "@consts";
+import {
+  t,
+  type Locale,
+  localizePath,
+  stripLocalePrefix,
+} from "@i18n";
+
+type Props = {
+  locale?: Locale;
+};
+
+const { locale = "en" } = Astro.props;
+
+const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const links = [
+  { key: "nav.home", href: "/" },
+  { key: "nav.blog", href: "/blog" },
+  { key: "nav.work", href: "/work" },
+  { key: "nav.projects", href: "/projects" },
+] as const;
 ---
 
-<header>
-  <Container>
-    <div class="flex flex-wrap gap-y-2 justify-between">
-      <Link href="/" underline={false}>
-        <div class="font-semibold">
-          {SITE.NAME}
-        </div>
-      </Link>
-      <nav class="flex gap-1">
-        <Link href="/blog">
-          blog
-        </Link>
-        <span>
-          {`/`}
-        </span>
-        <Link href="/work">
-          work
-        </Link>
-        <span>
-          {`/`}
-        </span>
-        <Link href="/projects">
-          projects
-        </Link>
-      </nav>
-    </div>
-  </Container>
+<header class="site-header">
+  <nav class="glass-nav" aria-label="Main navigation">
+    <span class="nav-pill" aria-hidden="true"></span>
+    {links.map((item) => {
+      const href = localizePath(item.href, locale);
+      const active =
+        pathname === href ||
+        (item.href !== "/" && pathname.startsWith(href));
+
+      return (
+        <a
+          href={href}
+          class:list={["nav-item", { active }]}
+          aria-current={active ? "page" : undefined}
+        >
+          {t(locale, item.key)}
+        </a>
+      );
+    })}
+    <span class="nav-divider" aria-hidden="true"></span>
+    <a
+      href={localizePath(stripLocalePrefix(pathname), "en")}
+      class:list={["nav-item", "lang-item", { active: locale === "en" }]}
+      aria-current={locale === "en" ? "true" : undefined}
+      lang="en"
+      hreflang="en"
+    >
+      EN
+    </a>
+    <a
+      href={localizePath(stripLocalePrefix(pathname), "fr")}
+      class:list={["nav-item", "lang-item", { active: locale === "fr" }]}
+      aria-current={locale === "fr" ? "true" : undefined}
+      lang="fr"
+      hreflang="fr"
+    >
+      FR
+    </a>
+  </nav>
 </header>
+
+<script>
+  function initNavPill() {
+    const nav = document.querySelector<HTMLDivElement>(".glass-nav");
+    if (!nav) return;
+
+    const pill = nav.querySelector<HTMLSpanElement>(".nav-pill");
+    const items = Array.from(nav.querySelectorAll<HTMLAnchorElement>(".nav-item"));
+    if (!pill || items.length === 0) return;
+
+    const active =
+      nav.querySelector<HTMLAnchorElement>(".nav-item.active") ?? items[0];
+
+    const moveTo = (el: HTMLAnchorElement) => {
+      pill.style.width = `${el.offsetWidth}px`;
+      pill.style.transform = `translateX(${el.offsetLeft}px)`;
+    };
+
+    moveTo(active);
+
+    items.forEach((item) => {
+      item.addEventListener("mouseenter", () => moveTo(item));
+    });
+    nav.addEventListener("mouseleave", () => moveTo(active));
+    window.addEventListener("resize", () => moveTo(active));
+  }
+
+  document.addEventListener("astro:page-load", initNavPill);
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+
+    display: flex;
+    justify-content: center;
+
+    width: 100%;
+    padding: 0 12px;
+  }
+
+  .glass-nav {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+
+    border: 1px solid rgba(128, 128, 128, 0.18);
+    border-radius: 9999px;
+
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+
+    transform-origin: top center;
+    transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :global(html.scrolled) .glass-nav {
+    transform: scale(0.9);
+  }
+
+  .nav-pill {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 0;
+    width: 0;
+
+    border-radius: 9999px;
+    background: rgba(128, 128, 128, 0.12);
+    pointer-events: none;
+
+    transition:
+      transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
+      width 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-item {
+    position: relative;
+
+    padding: 9px 16px;
+    border-radius: 9999px;
+
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    text-decoration: none;
+    white-space: nowrap;
+
+    transition:
+      transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-item:hover {
+    color: #111;
+    transform: translateY(-2px);
+  }
+
+  .nav-item.active {
+    color: #111;
+  }
+
+  .nav-divider {
+    width: 1px;
+    height: 18px;
+    margin: 0 4px;
+    background: rgba(128, 128, 128, 0.25);
+    flex-shrink: 0;
+  }
+
+  .lang-item {
+    padding: 9px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  /* Dark mode */
+  :global(.dark) .glass-nav {
+    background: rgba(25, 25, 28, 0.5);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  :global(.dark) .nav-pill {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  :global(.dark) .nav-item {
+    color: #aaa;
+  }
+
+  :global(.dark) .nav-item:hover,
+  :global(.dark) .nav-item.active {
+    color: #fff;
+  }
+
+  :global(.dark) .nav-divider {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  /* Mobile */
+  @media (max-width: 480px) {
+    .glass-nav {
+      gap: 2px;
+      padding: 5px;
+    }
+
+    .nav-pill {
+      top: 5px;
+      bottom: 5px;
+    }
+
+    .nav-item {
+      padding: 9px 11px;
+      font-size: 12px;
+    }
+
+    .lang-item {
+      padding: 9px 9px;
+      font-size: 11px;
+    }
+
+    .nav-divider {
+      margin: 0 2px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-item,
+    .nav-pill,
+    .glass-nav {
+      transition: none;
+    }
+
+    .nav-item:hover {
+      transform: none;
+    }
+  }
+</style>

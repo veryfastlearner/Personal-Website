@@ -1,0 +1,22 @@
+---
+import { getCollection } from "astro:content";
+import ProjectPost from "@components/pages/ProjectPost.astro";
+
+export async function getStaticPaths() {
+  const projects = (await getCollection("projects", (p) => p.data.lang === "fr"))
+    .filter(project => !project.data.draft)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  return projects.map((project) => ({
+    params: { slug: project.slug.replace(/^fr\//, "") },
+    props: { project },
+  }));
+}
+
+type Props = {
+  project: import("astro:content").CollectionEntry<"projects">;
+};
+
+const { project } = Astro.props;
+---
+
+<ProjectPost project={project} locale="fr" />
