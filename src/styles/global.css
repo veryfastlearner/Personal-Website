@@ -11,12 +11,12 @@ html.dark {
   color-scheme: dark;
 }
 
-html,
-body {
+html {
   @apply size-full;
 }
 
 body {
+  @apply min-h-full;
   @apply font-sans antialiased;
   @apply flex flex-col;
   @apply bg-stone-100 dark:bg-stone-900;

@@ -101,3 +101,8 @@ Possible dynamic routes being matched: src/pages/fr/projects/[...slug].astro.
 [2m20:27:58[22m [34m[200][39m /projects [2m10ms[22m
 [2m20:27:58[22m [34m[200][39m /work [2m9ms[22m
 [2m20:27:58[22m [34m[200][39m /blog [2m7ms[22m
+[2m20:31:55[22m [34m[watch][39m /src/styles/global.css
+[2m20:31:59[22m [34m[200][39m / [2m1416ms[22m
+[2m20:32:36[22m [34m[watch][39m /src/styles/global.css
+[2m20:32:39[22m [34m[200][39m / [2m1002ms[22m
+[2m20:35:51[22m [34m[200][39m /blog/intro-pentest [2m14ms[22m
