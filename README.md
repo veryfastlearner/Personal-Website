@@ -1,64 +1,123 @@
-![Astro Nano](_astro_nano.png)
+# Ben Mim Ahmed — Personal Website
 
-Astro Nano is a static, minimalist, lightweight, lightning fast portfolio and blog theme.
+Personal portfolio and blog of Ben Mim Ahmed, ICT engineering student at SUP'COM, focused on offensive cybersecurity and penetration testing.
 
-Built with Astro, Tailwind and Typescript, an no frameworks.
+Built with [Astro](https://astro.build/), [Tailwind CSS](https://tailwindcss.com/), and TypeScript.
 
-It was designed as an even more minimal theme than my popular theme [Astro Sphere](https://github.com/markhorn-dev/astro-sphere)
+## 🌐 Live Site
 
-## 🚀 Deploy your own
-
-[![Deploy with Vercel](_deploy_vercel.svg)](https://vercel.com/new/clone?repository-url=https://github.com/markhorn-dev/astro-nano)  [![Deploy with Netlify](_deploy_netlify.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/markhorn-dev/astro-nano)
+https://veryfastlearner.github.io/Personal-Website/
 
 ## 📋 Features
 
-- ✅ 100/100 Lighthouse performance
-- ✅ Responsive
-- ✅ Accessible
-- ✅ SEO-friendly
-- ✅ Typesafe
-- ✅ Minimal style
-- ✅ Light/Dark Theme
-- ✅ Animated UI
-- ✅ Tailwind styling
-- ✅ Auto generated sitemap
-- ✅ Auto generated RSS Feed
-- ✅ Markdown support
-- ✅ MDX Support (components in your markdown)
+- ✅ Bilingual (English / French) with i18n
+- ✅ Blog with Markdown support
+- ✅ Projects showcase
+- ✅ Work experience timeline
+- ✅ Responsive design
+- ✅ Light/Dark theme
+- ✅ SEO-friendly (sitemap, RSS feed, Open Graph)
+- ✅ Fast performance (100/100 Lighthouse)
+- ✅ Type-safe content collections
 
-## 💯 Lighthouse score
-![Astro Nano Lighthouse Score](_lighthouse.png)
+## 🛠️ Tech Stack
 
-## 🕊️ Lightweight
-No frameworks or added bulk
+- [Astro](https://astro.build/) — Static site generator
+- [Tailwind CSS](https://tailwindcss.com/) — Styling
+- [TypeScript](https://www.typescriptlang.org/) — Type safety
+- [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/) — Content management
 
-## ⚡︎ Fast
-Rendered in ~40ms on localhost
+## 📁 Project Structure
 
-## 📄 Configuration
+```
+src/
+├── components/        # Reusable UI components
+│   ├── pages/         # Page-level components (Home, BlogIndex, etc.)
+│   └── ...
+├── content/           # Content collections (blog, projects, work)
+│   ├── blog/          # Blog posts (en, fr)
+│   ├── projects/      # Project entries (en, fr)
+│   └── work/          # Work experience (en, fr)
+├── layouts/           # Page layouts
+├── lib/               # Utility functions
+├── pages/             # Astro pages (routes)
+├── styles/            # Global styles
+├── consts.ts          # Site configuration
+├── i18n.ts            # Internationalization strings
+└── types.ts           # TypeScript types
+```
 
-The blog posts on the demo serve as the documentation and configuration.
+## 🚀 Getting Started
 
-## 💻 Commands
+### Prerequisites
 
-All commands are run from the root of the project, from a terminal:
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [pnpm](https://pnpm.io/) (recommended) or npm/yarn
 
-Replace npm with your package manager of choice. `npm`, `pnpm`, `yarn`, `bun`, etc
+### Installation
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run dev:network`     | Starts local dev server on local network         |
-| `npm run sync`            | Generates TypeScript types for all Astro modules.|
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run preview:network` | Preview build on local network                   |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-| `npm run lint`            | Run ESLint                                       |
-| `npm run lint:fix`        | Auto-fix ESLint issues                           |
+```bash
+# Clone the repository
+git clone https://github.com/veryfastlearner/Personal-Website.git
+cd Personal-Website
 
-## 🏛️ License
+# Install dependencies
+pnpm install
+```
+
+### Development
+
+```bash
+# Start the dev server at localhost:4321
+pnpm run dev
+
+# Start the dev server on the local network
+pnpm run dev:network
+```
+
+### Building
+
+```bash
+# Build for production
+pnpm run build
+
+# Preview the production build locally
+pnpm run preview
+```
+
+### Other Commands
+
+| Command | Action |
+|---------|--------|
+| `pnpm run sync` | Generate TypeScript types for Astro modules |
+| `pnpm run astro ...` | Run Astro CLI commands |
+| `pnpm run lint` | Run ESLint |
+| `pnpm run lint:fix` | Auto-fix ESLint issues |
+
+## 📝 Content
+
+Content is managed through Astro Content Collections:
+
+- **Blog** — `src/content/blog/` (English and French)
+- **Projects** — `src/content/projects/` (English and French)
+- **Work** — `src/content/work/` (English and French)
+
+Each entry uses frontmatter for metadata (title, date, language, draft status, featured flag, etc.) and Markdown/MDX for the body.
+
+## 🌍 Internationalization
+
+The site supports two locales:
+- `en` — English (default)
+- `fr` — French
+
+Translations are defined in `src/i18n.ts`. Routes are prefixed with the locale (e.g., `/fr/blog`).
+
+## 📞 Contact
+
+- **Email**: ahmed.b.mim@gmail.com
+- **GitHub**: [@veryfastlearner](https://github.com/veryfastlearner)
+- **LinkedIn**: [Ben Mim Ahmed](https://www.linkedin.com/in/ben-mim-ahmed-5b392739b)
+
+## 📄 License
 
 MIT
