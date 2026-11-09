@@ -10,15 +10,18 @@ type Props = {
   description: string;
   locale?: Locale;
   image?: string;
+  type?: "website" | "article";
+  publishedTime?: Date;
+  jsonLd?: object[];
 };
 
-const { title, description, locale = "en", image } = Astro.props;
+const { title, description, locale = "en", image, type, publishedTime, jsonLd } = Astro.props;
 ---
 
 <!doctype html>
 <html lang={locale}>
   <head>
-    <Head title={`${title} | ${SITE.NAME}`} description={description} image={image} />
+    <Head title={`${title} | ${SITE.NAME}`} description={description} image={image} locale={locale} type={type} publishedTime={publishedTime} jsonLd={jsonLd} />
   </head>
   <body>
     <Header locale={locale} />

@@ -1,11 +1,6 @@
 ---
-import { getCollection } from "astro:content";
-import {
-  t,
-  type Locale,
-  localizePath,
-  stripLocalePrefix,
-} from "@i18n";
+import { t, localizePath, type Locale } from "@i18n";
+import { getLocalizedHrefs } from "@lib/alternates";
 
 type Props = {
   locale?: Locale;
@@ -14,7 +9,6 @@ type Props = {
 const { locale = "en" } = Astro.props;
 
 const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
-const basePath = stripLocalePrefix(pathname);
 
 const links = [
   { key: "nav.home", href: "/" },
@@ -23,25 +17,7 @@ const links = [
   { key: "nav.projects", href: "/projects" },
 ] as const;
 
-let enHref = localizePath(basePath, "en");
-let frHref = localizePath(basePath, "fr");
-
-const blogSlug = basePath.startsWith("/blog/")
-  ? basePath.slice("/blog/".length)
-  : null;
-
-if (blogSlug) {
-  const posts = await getCollection("blog");
-  const hasTranslation = (target: Locale) =>
-    posts.some((post) => {
-      const slug =
-        target === "fr" ? post.slug.replace(/^fr\//, "") : post.slug;
-      return post.data.lang === target && !post.data.draft && slug === blogSlug;
-    });
-
-  if (!hasTranslation("en")) enHref = "/blog";
-  if (!hasTranslation("fr")) frHref = "/fr/blog";
-}
+const { en: enHref, fr: frHref } = await getLocalizedHrefs(pathname);
 ---
 
 <header class="site-header">

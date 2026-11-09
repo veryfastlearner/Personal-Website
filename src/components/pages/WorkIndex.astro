@@ -25,13 +25,13 @@ const work = await Promise.all(
 <PageLayout title={t(locale, "meta.work.title")} description={t(locale, "meta.work.description")} locale={locale}>
   <Container>
     <div class="space-y-10">
-      <div class="animate font-semibold text-black dark:text-white">
+      <h1 class="animate font-semibold text-black dark:text-white">
         {t(locale, "page.work")}
-      </div>
+      </h1>
       <ul class="flex flex-col space-y-4">
         {
-          work.map(entry => (
-            <li class="animate">
+          work.map((entry, i) => (
+            <li class="animate" style={`--animate-index: ${i + 1}`}>
               <div class="text-sm opacity-75">
                 {dateRange(entry.data.dateStart, entry.data.dateEnd, locale)}
               </div>

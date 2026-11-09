@@ -5,7 +5,7 @@ date: "2026-11-09"
 lang: en
 ---
 
-Cyber Threat Intelligence (CTI) turns raw data into context for faster threat detection. Tactical intelligence uses Indicators of Compromise (IOCs) such as IP addresses, file hashes, or URLs tied to known malicious activity. Operational intelligence covers TTPs (tactics, techniques, and procedures), for example the MITRE ATT&CK framework, which helps hunt threats and improve alerts.
+Cyber Threat Intelligence (CTI) turns raw data into context for faster threat detection. Tactical intelligence uses Indicators of Compromise (IOCs) such as IP addresses, file hashes, or URLs tied to known malicious activity. Operational intelligence covers TTPs (tactics, techniques, and procedures), for example the MITRE ATT&CK framework, which helps [hunt threats](/blog/threat-hunting-peak-framework/) and improve alerts.
 
 CTI comes from internal reports, open sources (OSINT), sharing groups (ISACs), or commercial feeds. Using CTI reduces false positives and speeds up investigations. Sharing findings helps everyone stay prepared.
 

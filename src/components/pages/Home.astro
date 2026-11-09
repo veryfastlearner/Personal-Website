@@ -49,31 +49,51 @@ const work = await Promise.all(
     return { ...item, Content };
   })
 );
+
+const siteURL = Astro.site ?? new URL(Astro.url.origin);
+const description = t(locale, "meta.home.description");
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: SITE.NAME,
+  email: `mailto:${SITE.EMAIL}`,
+  url: siteURL.href,
+  description,
+  sameAs: SOCIALS.map((social) => social.HREF),
+};
+
+const website = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.NAME,
+  url: siteURL.href,
+};
 ---
 
-<PageLayout title={t(locale, "meta.home.title")} description={t(locale, "meta.home.description")} locale={locale}>
+<PageLayout title={t(locale, "meta.home.title")} description={description} locale={locale} jsonLd={[person, website]}>
   <Container>
-    <h4 class="animate font-semibold text-black dark:text-white">
+    <h1 class="animate font-semibold text-black dark:text-white">
       {t(locale, "home.greeting")}
-    </h4>
+    </h1>
     <div class="space-y-16">
       <section>
         <article class="space-y-4">
-          <p class="animate font-semibold text-black dark:text-white">
+          <p class="animate font-semibold text-black dark:text-white" style="--animate-index: 1">
             {t(locale, "home.title")}
           </p>
-          <p class="animate">
+          <p class="animate" style="--animate-index: 1">
             {t(locale, "home.summary")}
           </p>
         </article>
       </section>
 
       {blog.length > 0 && (
-        <section class="animate space-y-6">
+        <section class="animate space-y-6" style="--animate-index: 2">
           <div class="flex flex-wrap gap-y-2 items-center justify-between">
-            <h5 class="font-semibold text-black dark:text-white">
+            <h2 class="font-semibold text-black dark:text-white">
               {t(locale, "section.latestPosts")}
-            </h5>
+            </h2>
             <Link href={`${base}/blog`}>
               {t(locale, "seeAll.posts")}
             </Link>
@@ -89,11 +109,11 @@ const work = await Promise.all(
       )}
 
       {work.length > 0 && (
-        <section class="animate space-y-6">
+        <section class="animate space-y-6" style="--animate-index: 3">
           <div class="flex flex-wrap gap-y-2 items-center justify-between">
-            <h5 class="font-semibold text-black dark:text-white">
+            <h2 class="font-semibold text-black dark:text-white">
               {t(locale, "section.workExperience")}
-            </h5>
+            </h2>
             <Link href={`${base}/work`}>
               {t(locale, "seeAll.work")}
             </Link>
@@ -120,11 +140,11 @@ const work = await Promise.all(
       )}
 
       {projects.length > 0 && (
-        <section class="animate space-y-6">
+        <section class="animate space-y-6" style="--animate-index: 4">
           <div class="flex flex-wrap gap-y-2 items-center justify-between">
-            <h5 class="font-semibold text-black dark:text-white">
+            <h2 class="font-semibold text-black dark:text-white">
               {t(locale, "section.recentProjects")}
-            </h5>
+            </h2>
             <Link href={`${base}/projects`}>
               {t(locale, "seeAll.projects")}
             </Link>
@@ -139,10 +159,10 @@ const work = await Promise.all(
         </section>
       )}
 
-      <section class="animate space-y-4">
-        <h5 class="font-semibold text-black dark:text-white">
+      <section class="animate space-y-4" style="--animate-index: 5">
+        <h2 class="font-semibold text-black dark:text-white">
           {t(locale, "section.letsConnect")}
-        </h5>
+        </h2>
         <article>
           <p>
             {t(locale, "connect.blurb")}

@@ -2,25 +2,48 @@
 import "../styles/global.css";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-600.css";
-import "@fontsource/lora/400.css";
-import "@fontsource/lora/600.css";
+import "@fontsource/lora/latin-400.css";
 import inter400 from "@fontsource/inter/files/inter-latin-400-normal.woff2";
 import inter600 from "@fontsource/inter/files/inter-latin-600-normal.woff2";
 import lora400 from "@fontsource/lora/files/lora-latin-400-normal.woff2";
-import lora600 from "@fontsource/lora/files/lora-latin-600-normal.woff2";
 
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "@consts";
+import { getLocalizedHrefs } from "@lib/alternates";
+import { stripLocalePrefix, type Locale } from "@i18n";
 
 interface Props {
   title: string;
   description: string;
   image?: string;
+  locale?: Locale;
+  type?: "website" | "article";
+  publishedTime?: Date;
+  jsonLd?: object[];
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image } = Astro.props;
+const { title, description, image, locale = "en", type = "website", publishedTime, jsonLd } = Astro.props;
+
+const siteURL = Astro.site ?? canonicalURL;
+const { en: enHref, fr: frHref, enTranslated, frTranslated } = await getLocalizedHrefs(Astro.url.pathname);
+
+const withTrailingSlash = (href: string) => (href === "/" ? "/" : `${href.replace(/\/$/, "")}/`);
+
+const basePath = stripLocalePrefix(Astro.url.pathname.replace(/\/$/, "") || "/");
+const isDetailPage = basePath.startsWith("/blog/") || basePath.startsWith("/projects/");
+
+const alternates: { hreflang: string; href: string }[] = [];
+if (enTranslated || !isDetailPage) {
+  alternates.push(
+    { hreflang: "en", href: new URL(withTrailingSlash(enHref), siteURL).href },
+    { hreflang: "x-default", href: new URL(withTrailingSlash(enHref), siteURL).href },
+  );
+}
+if (frTranslated || !isDetailPage) {
+  alternates.push({ hreflang: "fr", href: new URL(withTrailingSlash(frHref), siteURL).href });
+}
 ---
 
 <!-- Global Metadata -->
@@ -35,14 +58,16 @@ const { title, description, image } = Astro.props;
 <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
 <link rel="manifest" href="/favicon/site.webmanifest" />
 
-<!-- Font preloads -->
+<!-- Font preloads: Inter 400/600 for UI and headings, Lora 400 for article prose -->
 <link rel="preload" href={inter400} as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href={inter600} as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href={lora400} as="font" type="font/woff2" crossorigin/>
-<link rel="preload" href={lora600} as="font" type="font/woff2" crossorigin/>
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
+
+<!-- Language alternates -->
+{alternates.map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
 
 <!-- Primary Meta Tags -->
 <title>{title}</title>
@@ -50,11 +75,13 @@ const { title, description, image } = Astro.props;
 <meta name="description" content={description} />
 
 <!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
+<meta property="og:type" content={type} />
+<meta property="og:locale" content={locale === "fr" ? "fr_FR" : "en_US"} />
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 {image && <meta property="og:image" content={new URL(image, Astro.url)} />}
+{type === "article" && publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
 
 <!-- Twitter -->
 <meta property="twitter:card" content={image ? "summary_large_image" : "summary"} />
@@ -62,6 +89,8 @@ const { title, description, image } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 {image && <meta property="twitter:image" content={new URL(image, Astro.url)} />}
+
+{jsonLd?.map((schema) => <script type="application/ld+json" set:html={JSON.stringify(schema)} />)}
 
 <ClientRouter  />
 
@@ -83,7 +112,6 @@ const { title, description, image } = Astro.props;
   function init() {
     preloadTheme();
     onScroll();
-    animate();
 
     const backToTop = document.getElementById("back-to-top");
     backToTop?.addEventListener("click", (event) => scrollToTop(event));
@@ -118,16 +146,6 @@ const { title, description, image } = Astro.props;
     );
 
     document.addEventListener("scroll", onScroll);
-  }
-
-  function animate() {
-    const animateElements = document.querySelectorAll(".animate");
-
-    animateElements.forEach((element, index) => {
-      setTimeout(() => {
-        element.classList.add("show");
-      }, index * 150);
-    });
   }
 
   function onScroll() {

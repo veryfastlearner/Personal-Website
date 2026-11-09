@@ -34,12 +34,12 @@ const years = Object.keys(posts).sort((a, b) => parseInt(b) - parseInt(a));
 <PageLayout title={t(locale, "meta.blog.title")} description={t(locale, "meta.blog.description")} locale={locale}>
   <Container>
     <div class="space-y-10">
-      <div class="animate font-semibold text-black dark:text-white">
+      <h1 class="animate font-semibold text-black dark:text-white">
         {t(locale, "page.blog")}
-      </div>
+      </h1>
       <div class="space-y-4">
-        {years.map(year => (
-          <section class="animate space-y-4">
+        {years.map((year, i) => (
+          <section class="animate space-y-4" style={`--animate-index: ${i + 1}`}>
             <div class="font-semibold text-black dark:text-white">
               {year}
             </div>
