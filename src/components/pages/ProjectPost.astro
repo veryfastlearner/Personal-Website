@@ -7,6 +7,8 @@ import { readingTime } from "@lib/utils";
 import BackToPrev from "@components/BackToPrev.astro";
 import Link from "@components/Link.astro";
 import { t, type Locale } from "@i18n";
+import ExternalLink from "lucide-astro/ExternalLink";
+import Github from "lucide-astro/Github";
 
 type Props = {
   project: CollectionEntry<"projects">;
@@ -42,15 +44,21 @@ const base = locale === "fr" ? "/fr" : "";
         <nav class="animate flex gap-1">
           {project.data.demoURL && (
             <Link href={project.data.demoURL} external>
-              {t(locale, "demo")}
+              <span class="inline-flex items-center gap-1">
+                <ExternalLink size={16} stroke-width={1.75} aria-hidden="true" />
+                {t(locale, "demo")}
+              </span>
             </Link>
           )}
           {project.data.demoURL && project.data.repoURL && (
-            <span>/</span>
+            <span class="px-1">/</span>
           )}
           {project.data.repoURL && (
             <Link href={project.data.repoURL} external>
-              {t(locale, "repo")}
+              <span class="inline-flex items-center gap-1">
+                <Github size={16} stroke-width={1.75} aria-hidden="true" />
+                {t(locale, "repo")}
+              </span>
             </Link>
           )}
         </nav>

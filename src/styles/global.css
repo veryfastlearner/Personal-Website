@@ -49,6 +49,42 @@ article {
   }
 }
 
+article :is(h2, h3, h4) {
+  @apply scroll-mt-24;
+}
+
+article table {
+  @apply block max-w-full overflow-x-auto;
+}
+
+article img {
+  @apply rounded-lg;
+}
+
+article :not(pre) > code {
+  overflow-wrap: anywhere;
+}
+
+article pre {
+  @apply relative pr-12;
+}
+
+.copy-code-button {
+  @apply absolute right-2 top-2 flex size-8 items-center justify-center rounded-md;
+  @apply border border-white/20 bg-inherit text-current;
+  @apply transition-colors duration-200;
+}
+
+.copy-code-button:hover,
+.copy-code-button:focus-visible,
+.copy-code-button.is-copied {
+  @apply border-white/40;
+}
+
+.copy-code-button:focus-visible {
+  @apply outline outline-2 outline-offset-2 outline-current;
+}
+
 .animate {
   @apply opacity-0 translate-y-2.5;
   @apply transition-all duration-700 ease-out;

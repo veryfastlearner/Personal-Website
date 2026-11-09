@@ -1,4 +1,5 @@
 ---
+import { getCollection } from "astro:content";
 import {
   t,
   type Locale,
@@ -13,6 +14,7 @@ type Props = {
 const { locale = "en" } = Astro.props;
 
 const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
+const basePath = stripLocalePrefix(pathname);
 
 const links = [
   { key: "nav.home", href: "/" },
@@ -20,6 +22,26 @@ const links = [
   { key: "nav.work", href: "/work" },
   { key: "nav.projects", href: "/projects" },
 ] as const;
+
+let enHref = localizePath(basePath, "en");
+let frHref = localizePath(basePath, "fr");
+
+const blogSlug = basePath.startsWith("/blog/")
+  ? basePath.slice("/blog/".length)
+  : null;
+
+if (blogSlug) {
+  const posts = await getCollection("blog");
+  const hasTranslation = (target: Locale) =>
+    posts.some((post) => {
+      const slug =
+        target === "fr" ? post.slug.replace(/^fr\//, "") : post.slug;
+      return post.data.lang === target && !post.data.draft && slug === blogSlug;
+    });
+
+  if (!hasTranslation("en")) enHref = "/blog";
+  if (!hasTranslation("fr")) frHref = "/fr/blog";
+}
 ---
 
 <header class="site-header">
@@ -43,7 +65,7 @@ const links = [
     })}
     <span class="nav-divider" aria-hidden="true"></span>
     <a
-      href={localizePath(stripLocalePrefix(pathname), "en")}
+      href={enHref}
       class:list={["nav-item", "lang-item", { active: locale === "en" }]}
       aria-current={locale === "en" ? "true" : undefined}
       lang="en"
@@ -52,7 +74,7 @@ const links = [
       EN
     </a>
     <a
-      href={localizePath(stripLocalePrefix(pathname), "fr")}
+      href={frHref}
       class:list={["nav-item", "lang-item", { active: locale === "fr" }]}
       aria-current={locale === "fr" ? "true" : undefined}
       lang="fr"
@@ -64,29 +86,85 @@ const links = [
 </header>
 
 <script>
-  function initNavPill() {
-    const nav = document.querySelector<HTMLDivElement>(".glass-nav");
-    if (!nav) return;
+  let cleanupNav: (() => void) | undefined;
 
-    const pill = nav.querySelector<HTMLSpanElement>(".nav-pill");
-    const items = Array.from(nav.querySelectorAll<HTMLAnchorElement>(".nav-item"));
-    if (!pill || items.length === 0) return;
+  function initNavPill() {
+    cleanupNav?.();
+    cleanupNav = undefined;
+
+    const nav = document.querySelector<HTMLElement>(".glass-nav");
+    const pill = nav?.querySelector<HTMLElement>(".nav-pill");
+    const items = nav
+      ? Array.from(nav.querySelectorAll<HTMLAnchorElement>(".nav-item"))
+      : [];
+
+    if (!nav || !pill || items.length === 0) return;
 
     const active =
       nav.querySelector<HTMLAnchorElement>(".nav-item.active") ?? items[0];
+    const canHover = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const controller = new AbortController();
+    const { signal } = controller;
 
-    const moveTo = (el: HTMLAnchorElement) => {
-      pill.style.width = `${el.offsetWidth}px`;
-      pill.style.transform = `translateX(${el.offsetLeft}px)`;
+    const place = (element: HTMLAnchorElement, animate: boolean) => {
+      if (element.offsetWidth === 0) return;
+
+      if (!animate) pill.style.transition = "none";
+      pill.style.width = `${element.offsetWidth}px`;
+      pill.style.transform = `translateX(${element.offsetLeft}px)`;
+
+      if (!animate) {
+        void pill.offsetWidth;
+        pill.style.transition = "";
+      }
     };
 
-    moveTo(active);
+    place(active, false);
+    nav.classList.add("is-ready");
+
+    const follow = (element: HTMLAnchorElement) => {
+      if (canHover.matches) place(element, true);
+    };
 
     items.forEach((item) => {
-      item.addEventListener("mouseenter", () => moveTo(item));
+      item.addEventListener(
+        "pointerenter",
+        (event) => {
+          if (event.pointerType === "mouse") follow(item);
+        },
+        { signal },
+      );
+      item.addEventListener(
+        "focus",
+        () => {
+          if (canHover.matches) follow(item);
+        },
+        { signal },
+      );
     });
-    nav.addEventListener("mouseleave", () => moveTo(active));
-    window.addEventListener("resize", () => moveTo(active));
+
+    nav.addEventListener(
+      "pointerleave",
+      (event) => {
+        if (event.pointerType === "mouse") place(active, true);
+      },
+      { signal },
+    );
+
+    const reposition = () => place(active, false);
+
+    window.addEventListener("resize", reposition, { signal });
+    window.addEventListener("pageshow", reposition, { signal });
+
+    document.fonts?.ready.then(reposition).catch(() => {});
+
+    const observer = new ResizeObserver(reposition);
+    observer.observe(nav);
+
+    cleanupNav = () => {
+      controller.abort();
+      observer.disconnect();
+    };
   }
 
   document.addEventListener("astro:page-load", initNavPill);
@@ -110,8 +188,9 @@ const links = [
 
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px;
+    gap: clamp(1px, 0.5vw, 4px);
+    padding: clamp(4px, 1vw, 6px);
+    max-width: calc(100vw - 24px);
 
     border: 1px solid rgba(128, 128, 128, 0.18);
     border-radius: 9999px;
@@ -141,48 +220,65 @@ const links = [
     background: rgba(128, 128, 128, 0.12);
     pointer-events: none;
 
+    opacity: 0;
+  }
+
+  .glass-nav.is-ready .nav-pill {
+    opacity: 1;
     transition:
-      transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
-      width 350ms cubic-bezier(0.4, 0, 0.2, 1);
+      transform 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      width 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .nav-item {
     position: relative;
 
-    padding: 9px 16px;
+    padding: 9px clamp(5px, 1.6vw, 16px);
     border-radius: 9999px;
 
-    font-size: 13px;
+    font-size: clamp(10px, 2.7vw, 13px);
     font-weight: 500;
+    line-height: 1.2;
     color: #666;
     text-decoration: none;
     white-space: nowrap;
 
-    transition:
-      transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
-      color 350ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 
-  .nav-item:hover {
-    color: #111;
-    transform: translateY(-2px);
+    transition:
+      transform 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 320ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .nav-item.active {
     color: #111;
   }
 
+  .nav-item:focus-visible {
+    outline: 2px solid rgba(17, 17, 17, 0.55);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nav-item:hover {
+      color: #111;
+      transform: translateY(-2px);
+    }
+  }
+
   .nav-divider {
     width: 1px;
     height: 18px;
-    margin: 0 4px;
+    margin: 0 clamp(2px, 0.6vw, 4px);
     background: rgba(128, 128, 128, 0.25);
     flex-shrink: 0;
   }
 
   .lang-item {
-    padding: 9px 12px;
-    font-size: 12px;
+    padding: 9px clamp(5px, 1.1vw, 12px);
+    font-size: clamp(9.5px, 2.4vw, 12px);
     font-weight: 600;
     letter-spacing: 0.04em;
   }
@@ -201,20 +297,32 @@ const links = [
     color: #aaa;
   }
 
-  :global(.dark) .nav-item:hover,
   :global(.dark) .nav-item.active {
     color: #fff;
+  }
+
+  :global(.dark) .nav-item:focus-visible {
+    outline-color: rgba(255, 255, 255, 0.65);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    :global(.dark) .nav-item:hover {
+      color: #fff;
+    }
   }
 
   :global(.dark) .nav-divider {
     background: rgba(255, 255, 255, 0.18);
   }
 
-  /* Mobile */
-  @media (max-width: 480px) {
+  @media (max-width: 360px) {
+    .site-header {
+      padding: 0 8px;
+    }
+
     .glass-nav {
-      gap: 2px;
-      padding: 5px;
+      max-width: calc(100vw - 16px);
+      padding: 4px;
     }
 
     .nav-pill {
@@ -223,27 +331,25 @@ const links = [
     }
 
     .nav-item {
-      padding: 9px 11px;
-      font-size: 12px;
+      padding-block: 8px;
+      font-size: 10px;
     }
 
     .lang-item {
-      padding: 9px 9px;
-      font-size: 11px;
-    }
-
-    .nav-divider {
-      margin: 0 2px;
+      padding-block: 8px;
+      font-size: 9.5px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .nav-item,
-    .nav-pill,
-    .glass-nav {
+    .glass-nav,
+    .glass-nav.is-ready .nav-pill {
       transition: none;
     }
+  }
 
+  @media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
     .nav-item:hover {
       transform: none;
     }

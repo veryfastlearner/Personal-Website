@@ -1,11 +1,15 @@
 ---
-import type { CollectionEntry } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
 import FormattedDate from "@components/FormattedDate.astro";
 import { readingTime } from "@lib/utils";
 import BackToPrev from "@components/BackToPrev.astro";
 import { t, type Locale } from "@i18n";
+import ArrowLeft from "lucide-astro/ArrowLeft";
+import ArrowRight from "lucide-astro/ArrowRight";
+import Calendar from "lucide-astro/Calendar";
+import Clock from "lucide-astro/Clock";
 
 type Props = {
   post: CollectionEntry<"blog">;
@@ -15,6 +19,17 @@ type Props = {
 const { post, locale } = Astro.props;
 const { Content } = await post.render();
 const base = locale === "fr" ? "/fr" : "";
+
+const posts = (
+  await getCollection("blog", (p) => p.data.lang === locale && !p.data.draft)
+).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const index = posts.findIndex((entry) => entry.slug === post.slug);
+const newer = index > 0 ? posts[index - 1] : undefined;
+const older = index >= 0 && index < posts.length - 1 ? posts[index + 1] : undefined;
+
+const postHref = (entry: CollectionEntry<"blog">) =>
+  `${base}/blog/${entry.slug.replace(/^fr\//, "")}`;
 ---
 
 <PageLayout title={post.data.title} description={post.data.description} locale={locale}>
@@ -25,21 +40,112 @@ const base = locale === "fr" ? "/fr" : "";
       </BackToPrev>
     </div>
     <div class="space-y-1 my-10">
-      <div class="animate flex items-center gap-1.5">
-        <div class="font-base text-sm">
+      <div class="animate flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <span class="inline-flex items-center gap-1.5">
+          <Calendar size={15} stroke-width={1.75} aria-hidden="true" />
           <FormattedDate date={post.data.date} locale={locale} />
-        </div>
-        &bull;
-        <div class="font-base text-sm">
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <Clock size={15} stroke-width={1.75} aria-hidden="true" />
           {readingTime(post.body)}
-        </div>
+        </span>
       </div>
       <div class="animate text-2xl font-semibold text-black dark:text-white">
         {post.data.title}
       </div>
     </div>
-    <article class="animate">
+    <article
+      class="animate"
+      data-copy-label={t(locale, "post.copyCode")}
+      data-copied-label={t(locale, "post.copied")}
+    >
       <Content />
     </article>
+
+    {(newer || older) && (
+      <nav
+        class="animate mt-12 grid gap-3 border-t border-black/10 pt-6 dark:border-white/15 sm:grid-cols-2"
+        aria-label={t(locale, "post.navigation")}
+      >
+        {newer ? (
+          <a
+            href={postHref(newer)}
+            class="group flex flex-col gap-1 rounded-lg border border-black/15 px-4 py-3 transition-colors duration-300 ease-in-out hover:bg-black/5 hover:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/30"
+          >
+            <span class="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide opacity-75">
+              <ArrowLeft size={14} stroke-width={2} aria-hidden="true" class="transition-transform duration-300 ease-in-out group-hover:-translate-x-0.5" />
+              {t(locale, "post.newer")}
+            </span>
+            <span class="font-semibold">{newer.data.title}</span>
+          </a>
+        ) : (
+          <span aria-hidden="true"></span>
+        )}
+        {older ? (
+          <a
+            href={postHref(older)}
+            class="group flex flex-col gap-1 rounded-lg border border-black/15 px-4 py-3 transition-colors duration-300 ease-in-out hover:bg-black/5 hover:text-black dark:border-white/20 dark:hover:bg-white/5 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 dark:focus-visible:ring-white/30 sm:items-end sm:text-right"
+          >
+            <span class="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide opacity-75">
+              {t(locale, "post.older")}
+              <ArrowRight size={14} stroke-width={2} aria-hidden="true" class="transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+            </span>
+            <span class="font-semibold">{older.data.title}</span>
+          </a>
+        ) : (
+          <span aria-hidden="true"></span>
+        )}
+      </nav>
+    )}
   </Container>
 </PageLayout>
+
+<script>
+  const copyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>`;
+  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>`;
+
+  function addCopyButtons() {
+    const article = document.querySelector<HTMLElement>("article[data-copy-label]");
+    if (!article) return;
+
+    article.querySelectorAll<HTMLPreElement>("pre:not([data-copy-ready])").forEach((pre) => {
+      const code = pre.querySelector("code");
+      if (!code) return;
+
+      pre.dataset.copyReady = "true";
+
+      const button = document.createElement("button");
+      const copyLabel = article.dataset.copyLabel ?? "Copy code";
+      const copiedLabel = article.dataset.copiedLabel ?? "Copied";
+
+      button.type = "button";
+      button.className = "copy-code-button";
+      button.innerHTML = copyIcon;
+      button.setAttribute("aria-label", copyLabel);
+      button.title = copyLabel;
+
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(code.innerText);
+          button.innerHTML = checkIcon;
+          button.classList.add("is-copied");
+          button.setAttribute("aria-label", copiedLabel);
+          button.title = copiedLabel;
+
+          window.setTimeout(() => {
+            button.innerHTML = copyIcon;
+            button.classList.remove("is-copied");
+            button.setAttribute("aria-label", copyLabel);
+            button.title = copyLabel;
+          }, 2000);
+        } catch {
+          button.setAttribute("aria-label", copyLabel);
+        }
+      });
+
+      pre.appendChild(button);
+    });
+  }
+
+  document.addEventListener("astro:page-load", addCopyButtons);
+</script>

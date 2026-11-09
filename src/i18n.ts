@@ -56,6 +56,12 @@ const en = {
   "demo": "demo",
   "repo": "repo",
 
+  "post.newer": "Newer article",
+  "post.older": "Older article",
+  "post.navigation": "Article navigation",
+  "post.copyCode": "Copy code",
+  "post.copied": "Copied",
+
   "meta.home.title": "Home",
   "meta.home.description":
     "Ben Mim Ahmed — ICT engineering student focused on offensive cybersecurity and penetration testing.",
@@ -101,6 +107,12 @@ const fr: Record<keyof typeof en, string> = {
   "backToProjects": "Retour aux projets",
   "demo": "démo",
   "repo": "repo",
+
+  "post.newer": "Article plus récent",
+  "post.older": "Article plus ancien",
+  "post.navigation": "Navigation entre les articles",
+  "post.copyCode": "Copier le code",
+  "post.copied": "Copié",
 
   "meta.home.title": "Accueil",
   "meta.home.description":

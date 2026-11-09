@@ -21,11 +21,15 @@ export async function GET(context: Context) {
     title: `${t("en", "meta.blog.title")} | ${SITE.NAME}`,
     description: t("en", "meta.home.description"),
     site: context.site,
-    items: items.map((item) => ({
-      title: item.data.title,
-      description: item.data.description,
-      pubDate: item.data.date,
-      link: `/${item.collection}/${item.slug}/`,
-    })),
+    items: items.map((item) => {
+      const base = item.data.lang === "fr" ? "/fr" : "";
+      const slug = item.slug.replace(/^fr\//, "");
+      return {
+        title: item.data.title,
+        description: item.data.description,
+        pubDate: item.data.date,
+        link: `${base}/${item.collection}/${slug}/`,
+      };
+    }),
   });
 }
